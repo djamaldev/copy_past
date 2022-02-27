@@ -1,64 +1,56 @@
+import 'package:copy_pasta/Providers/clip_board_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
   //final String title;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
+  final clipBoardProvider =
+      ChangeNotifierProvider((ref) => ClipBoardProvider());
   TextEditingController field = TextEditingController();
-  final List<String> _copiedText = [];
-  List<String> allCopiedText = [];
+  final List<String> _item = [];
+  //List<String> allCopiedText = [];
 
   @override
   void initState() {
-    // TODO: implement initState
+    ref.read(clipBoardProvider).getData();
     super.initState();
-    _getData();
-    //_remove();
-  }
-
-  _getData() async {
-    //_getDataFromShared();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    //allCopiedText.addAll(prefs.getStringList('copy')!);
-    Clipboard.getData(Clipboard.kTextPlain).then(
-      (value) {
-        _copiedText.addAll([value!.text!]);
-        for (final element in _copiedText) {
-          allCopiedText.insert(0, element);
-        }
-        //allCopiedText.insertAll(0, _copiedText);
-        //prefs.setStringList('copy', allCopiedText);
-        print(allCopiedText);
-      },
-    );
-  }
-
-  _remove() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    //prefs.remove('copy');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: ListView.builder(
-            shrinkWrap: true,
-            itemCount: allCopiedText.length,
-            itemBuilder: (context, index) {
-              //_getData();
-              return ListTile(
-                title: Text(
-                  allCopiedText[index],
-                ),
-              );
-            }));
+      body: ListView.builder(
+        shrinkWrap: true,
+        itemCount: ref.watch(clipBoardProvider).allCopiedText.length,
+        itemBuilder: (context, index) {
+          //ref.read(clipBoardProvider).getData();
+          return ref.watch(clipBoardProvider).allCopiedText == []
+              ? const Center(
+                  child: Text('No data!'),
+                )
+              : ListTile(
+                  leading: GestureDetector(
+                    onTap: () => Future.delayed(
+                      Duration.zero,
+                      () => ref.read(clipBoardProvider).copyText(
+                          ref.watch(clipBoardProvider).allCopiedText[index]),
+                    ), //ref.read(clipBoardProvider).copyText('text'),
+                    child: const Icon(Icons.copy),
+                  ),
+                  title: Text(
+                    ref.watch(clipBoardProvider).allCopiedText[index],
+                  ),
+                );
+        },
+      ),
+    );
   }
 }

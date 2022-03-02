@@ -17,7 +17,7 @@ class DBHelper {
         _db = await openDatabase(_path, version: _version,
             onCreate: (Database db, int version) async {
           await db.execute(
-            'CREATE TABLE $_tableName(id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT)',
+            'CREATE TABLE $_tableName(id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT, UNIQUE(text))',
           );
         });
       } catch (e) {
@@ -27,7 +27,14 @@ class DBHelper {
   }
 
   static Future<int> insert(ClipBoardManager? text) async {
-    print(text!.toString());
+    List<Map> result = await _db!.query(_tableName,
+        columns: ['text'], where: 'text = ?', whereArgs: [text!.text]);
+    for (var element in result) {
+      if (element['text'] == text.text) {
+        print('eee = ${element['text']}');
+        return _db!.insert(_tableName, {'text ': ''});
+      }
+    }
     return _db!.insert(_tableName, {'text ': text.text});
   }
 

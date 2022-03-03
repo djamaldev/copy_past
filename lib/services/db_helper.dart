@@ -26,16 +26,31 @@ class DBHelper {
     }
   }
 
-  static Future<int> insert(ClipBoardManager? text) async {
-    List<Map> result = await _db!.query(_tableName,
-        columns: ['text'], where: 'text = ?', whereArgs: [text!.text]);
-    for (var element in result) {
-      if (element['text'] == text.text) {
-        print('eee = ${element['text']}');
-        return _db!.insert(_tableName, {'text ': ''});
-      }
+  void _query(key) async {
+    //Database db = await DatabaseHelper.instance.database;
+    List<Map> result = await _db!
+        .rawQuery("SELECT text FROM $_tableName WHERE text LIKE '%$key%'");
+
+    var course = result.map<String>((element) {
+      return element['text'];
+    }).toList();
+    if (course == key) {
+      print('exist item: $course');
     }
-    return _db!.insert(_tableName, {'text ': text.text});
+    //print(course);
+  }
+
+  static Future<int> insert(ClipBoardManager? text) async {
+    List<Map> result = await _db!
+        .rawQuery("SELECT text FROM $_tableName WHERE text LIKE '%$text%'");
+
+    var course = result.map<String>((element) {
+      return element['text'];
+    }).toList();
+    if (course == text) {
+      print('exist item: $course');
+    }
+    return _db!.insert(_tableName, {'text ': text!.text});
   }
 
   static Future<List<Map<String, dynamic>>> query() async {

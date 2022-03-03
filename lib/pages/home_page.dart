@@ -1,4 +1,5 @@
 import 'package:copy_pasta/Providers/clip_board_provider.dart';
+import 'package:copy_pasta/services/clip_board.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,69 +23,55 @@ class _HomePageState extends ConsumerState<HomePage> {
     _showDialog();
   }
 
-  _onRefrech() async {
-    ref.read(clipBoardProvider).getAllCopiedText();
-  }
-
   _showDialog() async {
-    await Future.delayed(const Duration(milliseconds: 50));
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('copyPast'),
-            content: const Text('Copied text detect from clipboard'),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    ref.read(clipBoardProvider).setData();
-                    //ref.read(clipBoardProvider).getAllCopiedText();
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Ok')),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('close'),
-              )
-            ],
-          );
-        });
+    await Future.delayed(const Duration(milliseconds: 30));
+    var isFound = ref.watch(clipBoardProvider).isExist;
+    isFound
+        ? showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text('copyPast'),
+                content: const Text('Copied text detect from clipboard'),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        ref.read(clipBoardProvider).setData();
+                        //ref.read(clipBoardProvider).getAllCopiedText();
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Ok')),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('close'),
+                  )
+                ],
+              );
+            })
+        : null;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          RefreshIndicator(
-            onRefresh: () => _onRefrech(),
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: ref.watch(clipBoardProvider).taskList.length,
-              itemBuilder: (context, index) {
-                var data = ref.watch(clipBoardProvider).taskList;
-                //Map<String, dynamic> item = snapshot.data![index];
-                return ListTile(
-                  leading: IconButton(
-                      icon: const Icon(Icons.copy), onPressed: () {}),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => ref
-                        .read(clipBoardProvider)
-                        .deleteTextAtIndex(data[index]),
-                  ),
-                  title: Text(data[index]['text']),
-                );
-              },
+      body: ListView.builder(
+        shrinkWrap: true,
+        itemCount: ref.watch(clipBoardProvider).taskList.length,
+        itemBuilder: (context, index) {
+          var data = ref.watch(clipBoardProvider).taskList;
+          ClipBoardManager? d;
+          return ListTile(
+            leading: IconButton(icon: const Icon(Icons.copy), onPressed: () {}),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () =>
+                  ref.read(clipBoardProvider).deleteAllCopiedText(),
             ),
-          ),
-          TextButton(
-            onPressed: () => ref.read(clipBoardProvider).setData(),
-            child: const Text('set'),
-          ),
-        ],
+            title: Text(data[index]['text']),
+          );
+        },
       ),
     );
   }

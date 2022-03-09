@@ -15,18 +15,18 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   final clipBoardProvider =
       ChangeNotifierProvider<ClipBoardProvider>((ref) => ClipBoardProvider());
-
+  bool _isok = false;
   @override
   void initState() {
     super.initState();
     ref.read(clipBoardProvider).getAllCopiedText();
-    _showDialog();
+    //_showDialog();
   }
 
   _showDialog() async {
     await Future.delayed(const Duration(milliseconds: 30));
     var isFound = ref.watch(clipBoardProvider).isExist;
-    isFound
+    !isFound
         ? showDialog(
             context: context,
             builder: (context) {
@@ -36,7 +36,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                 actions: [
                   TextButton(
                       onPressed: () {
-                        ref.read(clipBoardProvider).setData();
+                        setState(() {
+                          _isok = true;
+                        });
+                        _isok ? ref.read(clipBoardProvider).setData() : null;
                         //ref.read(clipBoardProvider).getAllCopiedText();
                         Navigator.of(context).pop();
                       },
@@ -69,8 +72,15 @@ class _HomePageState extends ConsumerState<HomePage> {
               onPressed: () =>
                   ref.read(clipBoardProvider).deleteAllCopiedText(),
             ),
-            title: Text(data[index]['text']),
+            title: Text(data[index]['text'].toString()),
           );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () {
+          _showDialog();
+          //ref.read(clipBoardProvider).getAllCopiedText();
         },
       ),
     );

@@ -19,8 +19,12 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
-    ref.read(clipBoardProvider).getAllCopiedText();
+    ref.read(clipBoardProvider.notifier).getAllCopiedText();
     //_showDialog();
+  }
+
+  Future<void> _onRfresh() async {
+    await ref.read(clipBoardProvider.notifier).getAllCopiedText();
   }
 
   _showDialog() async {
@@ -59,22 +63,35 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView.builder(
-        shrinkWrap: true,
-        itemCount: ref.watch(clipBoardProvider).taskList.length,
-        itemBuilder: (context, index) {
-          var data = ref.watch(clipBoardProvider).taskList;
-          ClipBoardManager? d;
-          return ListTile(
-            leading: IconButton(icon: const Icon(Icons.copy), onPressed: () {}),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () =>
-                  ref.read(clipBoardProvider).deleteAllCopiedText(),
-            ),
-            title: Text(data[index]['text'].toString()),
-          );
-        },
+      body: RefreshIndicator(
+        onRefresh: _onRfresh,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: ref.watch(clipBoardProvider).taskList.length,
+          itemBuilder: (context, index) {
+            var data = ref.watch(clipBoardProvider).taskList;
+            var text = ClipBoardManager();
+            ClipBoardManager? d;
+            return ListTile(
+              leading: IconButton(
+                icon: const Icon(Icons.copy),
+                onPressed: () {
+                  ref.read(clipBoardProvider).copyText(data[index]['text']);
+                },
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () {
+                  ref
+                      .read(clipBoardProvider)
+                      .deleteTextAtIndex(data[index]['text']);
+                  print(index);
+                },
+              ),
+              title: Text(data[index]['text'].toString()),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),

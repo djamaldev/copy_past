@@ -42,8 +42,12 @@ class DBHelper {
     return _db!.delete(_tableName);
   }
 
-  static Future<int> delete(ClipBoardManager? text) async {
-    return _db!.delete(_tableName, where: 'id = ?', whereArgs: [text!.id]);
+  static Future<int> delete11(ClipBoardManager? data) async {
+    return _db!.delete(_tableName, where: 'id = ?', whereArgs: [data!.id]);
+  }
+
+  static Future<int> delete(String text) async {
+    return await _db!.delete(_tableName, where: 'text = ?', whereArgs: [text]);
   }
   /*static Future<int> insert(Task? task) async {
     return _db!.insert(_tableName, task!.toJson());

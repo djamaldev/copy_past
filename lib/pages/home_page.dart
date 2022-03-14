@@ -1,5 +1,4 @@
 import 'package:copy_pasta/Providers/clip_board_provider.dart';
-import 'package:copy_pasta/services/clip_board.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,7 +14,7 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   final clipBoardProvider =
       ChangeNotifierProvider<ClipBoardProvider>((ref) => ClipBoardProvider());
-  bool _isok = false;
+  final bool _isok = false;
   @override
   void initState() {
     super.initState();
@@ -29,49 +28,46 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   _showDialog() async {
     await Future.delayed(const Duration(milliseconds: 30));
-    var isFound = ref.watch(clipBoardProvider).isExist;
-    !isFound
-        ? showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text('copyPast'),
-                content: const Text('Copied text detect from clipboard'),
-                actions: [
-                  TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _isok = true;
-                        });
-                        _isok ? ref.read(clipBoardProvider).setData() : null;
-                        //ref.read(clipBoardProvider).getAllCopiedText();
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Ok')),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('close'),
-                  )
-                ],
-              );
-            })
-        : null;
+    //var isFound = !ref.watch(clipBoardProvider).isExist;
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('copyPast'),
+            content: const Text('Copied text detect from clipboard'),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    /*setState(() {
+                      _isok = true;
+                    });*/
+                    ref.read(clipBoardProvider).setData();
+                    //ref.read(clipBoardProvider).getAllCopiedText();
+                    print(ref.watch(clipBoardProvider).isExist);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Ok')),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('close'),
+              )
+            ],
+          );
+        });
   }
 
   @override
   Widget build(BuildContext context) {
+    var data = ref.watch(clipBoardProvider).taskList;
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _onRfresh,
         child: ListView.builder(
           shrinkWrap: true,
-          itemCount: ref.watch(clipBoardProvider).taskList.length,
+          itemCount: data.length,
           itemBuilder: (context, index) {
-            var data = ref.watch(clipBoardProvider).taskList;
-            var text = ClipBoardManager();
-            ClipBoardManager? d;
             return ListTile(
               leading: IconButton(
                 icon: const Icon(Icons.copy),
@@ -84,7 +80,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onPressed: () {
                   ref
                       .read(clipBoardProvider)
-                      .deleteTextAtIndex(data[index]['text']);
+                      .deleteTextAtIndex(data[index]['text'].toString());
                   print(index);
                 },
               ),
@@ -96,8 +92,9 @@ class _HomePageState extends ConsumerState<HomePage> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
-          _showDialog();
-          //ref.read(clipBoardProvider).getAllCopiedText();
+          setState(() {
+            _showDialog();
+          });
         },
       ),
     );

@@ -1,16 +1,17 @@
-import 'package:copy_pasta/services/clip_board.dart';
 import 'package:copy_pasta/services/db_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../services/clip_board.dart';
+
 class ClipBoardProvider extends ChangeNotifier {
-  List<Map<dynamic, dynamic>> _taskList = [];
+  List<Map<String, dynamic>> _taskList = [];
   bool _isExist = false;
   final bool _isDetected = false;
   final bool _isOk = false;
   final String _value = '';
 
-  List get taskList => _taskList;
+  List get taskList => [..._taskList];
   bool get isExist => _isExist;
   bool get isDetected => _isDetected;
   bool get isOk => _isOk;
@@ -23,9 +24,9 @@ class ClipBoardProvider extends ChangeNotifier {
 
   getAllCopiedText() async {
     _taskList = await DBHelper.query();
-
+    //print('list = $_taskList');
     for (int index = 0; index < _taskList.length; index++) {
-      print('list = ${_taskList[index]['text']}');
+      //print('list = ${_taskList[index]['text']}');
     }
     notifyListeners();
     //return _taskList;
@@ -35,18 +36,20 @@ class ClipBoardProvider extends ChangeNotifier {
     Clipboard.getData(Clipboard.kTextPlain).then(
       (value) async {
         _taskList.indexWhere((element) {
-          if (element['text'] == value!.text) {
+          if (element.containsValue(value!.text)) {
             _isExist = true;
           }
           //_value = value.text!;
-          return _isExist;
+          return false;
         });
         if (!isExist) {
-          DBHelper.insert(ClipBoardManager(text: value!.text!));
-          _taskList = await DBHelper.query();
+          await DBHelper.insert(ClipBoardManager(text: value!.text!));
+          getAllCopiedText();
         } else {
           Null;
         }
+        //_taskList.where((element) => element['text'] != value!.text);
+        //await DBHelper.insert(ClipBoardManager(text: value!.text!));
       },
     );
     // _taskList = await DBHelper.query();
@@ -55,7 +58,6 @@ class ClipBoardProvider extends ChangeNotifier {
 
   deleteAllCopiedText() async {
     await DBHelper.deleteAll();
-    //Clipboard.hasStrings();
     _taskList = [];
     notifyListeners();
   }

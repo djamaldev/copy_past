@@ -34,8 +34,8 @@ class DBHelper {
     return _db!.query(_tableName, orderBy: 'id DESC', columns: ['text']);
   }
 
-  static Future getRaw() async {
-    await _db!.rawQuery('SELECT text FROM $_tableName');
+  static Future<List<Map<String, dynamic>>> getRaw(String text) async {
+    return await _db!.query(_tableName, columns: [text]);
   }
 
   static Future<int> deleteAll() async {

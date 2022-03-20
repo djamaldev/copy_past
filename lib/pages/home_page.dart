@@ -27,7 +27,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   _showDialog() async {
-    await Future.delayed(const Duration(milliseconds: 30));
+    //await Future.delayed(const Duration(milliseconds: 30));
     //var isFound = !ref.watch(clipBoardProvider).isExist;
     showDialog(
         context: context,
@@ -38,12 +38,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             actions: [
               TextButton(
                   onPressed: () {
-                    /*setState(() {
-                      _isok = true;
-                    });*/
                     ref.read(clipBoardProvider).setData();
-                    //ref.read(clipBoardProvider).getAllCopiedText();
-                    print(ref.watch(clipBoardProvider).isExist);
                     Navigator.of(context).pop();
                   },
                   child: const Text('Ok')),

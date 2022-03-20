@@ -6,15 +6,8 @@ import '../services/clip_board.dart';
 
 class ClipBoardProvider extends ChangeNotifier {
   List<Map<String, dynamic>> _taskList = [];
-  bool _isExist = false;
-  final bool _isDetected = false;
-  final bool _isOk = false;
-  final String _value = '';
 
   List get taskList => [..._taskList];
-  bool get isExist => _isExist;
-  bool get isDetected => _isDetected;
-  bool get isOk => _isOk;
 
   copyText(String text) async {
     await Clipboard.setData(ClipboardData(text: text));
@@ -35,24 +28,16 @@ class ClipBoardProvider extends ChangeNotifier {
   setData() {
     Clipboard.getData(Clipboard.kTextPlain).then(
       (value) async {
-        _taskList.indexWhere((element) {
-          if (element.containsValue(value!.text)) {
-            _isExist = true;
-          }
-          //_value = value.text!;
-          return false;
-        });
-        if (!isExist) {
-          await DBHelper.insert(ClipBoardManager(text: value!.text!));
+        bool dd = await DBHelper.texExists(value!.text!);
+        if (dd == false) {
+          await DBHelper.insert(ClipBoardManager(text: value.text));
           getAllCopiedText();
         } else {
           Null;
         }
-        //_taskList.where((element) => element['text'] != value!.text);
-        //await DBHelper.insert(ClipBoardManager(text: value!.text!));
       },
     );
-    // _taskList = await DBHelper.query();
+    print('list = $_taskList');
     notifyListeners();
   }
 

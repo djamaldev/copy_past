@@ -17,7 +17,7 @@ class DBHelper {
         _db = await openDatabase(_path, version: _version,
             onCreate: (Database db, int version) async {
           await db.execute(
-            'CREATE TABLE $_tableName(id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT, UNIQUE(text))',
+            'CREATE TABLE $_tableName(id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT)',
           );
         });
       } catch (e) {
@@ -34,20 +34,20 @@ class DBHelper {
     return _db!.query(_tableName, orderBy: 'id DESC', columns: ['text']);
   }
 
-  static Future<List<Map<String, dynamic>>> getRaw(String text) async {
-    return await _db!.query(_tableName, columns: [text]);
-  }
-
   static Future<int> deleteAll() async {
     return _db!.delete(_tableName);
   }
 
-  static Future<int> delete11(ClipBoardManager? data) async {
-    return _db!.delete(_tableName, where: 'id = ?', whereArgs: [data!.id]);
-  }
-
   static Future<int> delete(String text) async {
     return await _db!.delete(_tableName, where: 'text = ?', whereArgs: [text]);
+  }
+
+  static Future<bool> texExists(String text) async {
+    var result = await _db!.rawQuery(
+      'SELECT EXISTS(SELECT 1 FROM $_tableName WHERE text="$text")',
+    );
+    int? exists = Sqflite.firstIntValue(result);
+    return exists == 1;
   }
   /*static Future<int> insert(Task? task) async {
     return _db!.insert(_tableName, task!.toJson());

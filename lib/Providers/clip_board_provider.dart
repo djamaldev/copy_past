@@ -6,12 +6,28 @@ import '../services/clip_board.dart';
 
 class ClipBoardProvider extends ChangeNotifier {
   List<Map<String, dynamic>> _taskList = [];
+  bool _isFound = false;
 
   List get taskList => [..._taskList];
+  bool get isFound => _isFound;
 
   copyText(String text) async {
     await Clipboard.setData(ClipboardData(text: text));
-    print(text);
+    notifyListeners();
+  }
+
+  coyOtherText(String text) async {
+    Clipboard.setData(ClipboardData(text: text)).then(
+      (_) async {
+        _isFound = await DBHelper.texExists(text);
+        if (_isFound == false) {
+          await DBHelper.insert(ClipBoardManager(text: text));
+          getAllCopiedText();
+        } else {
+          Null;
+        }
+      },
+    );
     notifyListeners();
   }
 
@@ -28,8 +44,8 @@ class ClipBoardProvider extends ChangeNotifier {
   setData() {
     Clipboard.getData(Clipboard.kTextPlain).then(
       (value) async {
-        bool dd = await DBHelper.texExists(value!.text!);
-        if (dd == false) {
+        _isFound = await DBHelper.texExists(value!.text!);
+        if (_isFound == false) {
           await DBHelper.insert(ClipBoardManager(text: value.text));
           getAllCopiedText();
         } else {
@@ -37,7 +53,6 @@ class ClipBoardProvider extends ChangeNotifier {
         }
       },
     );
-    print('list = $_taskList');
     notifyListeners();
   }
 

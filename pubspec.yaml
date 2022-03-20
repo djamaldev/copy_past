@@ -31,7 +31,9 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter:
     sdk: flutter
+  flutter_app_lock: ^2.0.0
   flutter_riverpod: ^1.0.3
+  passcode_screen: ^2.0.1
   shared_preferences: ^2.0.13
   sqflite: ^2.0.2
 

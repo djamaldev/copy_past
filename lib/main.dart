@@ -1,8 +1,8 @@
+import 'package:copy_pasta/pages/home_page.dart';
+import 'package:copy_pasta/pages/passcode_screen.dart';
 import 'package:copy_pasta/services/db_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +22,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage(),
+      //home: const LockScreen(),
+      routes: {
+        '/': (context) => const LockScreen(),
+        'home': (context) => const HomePage(),
+      },
     );
   }
 }

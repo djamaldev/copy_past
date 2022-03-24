@@ -1,12 +1,16 @@
 import 'dart:async';
 
+import 'package:copy_pasta/Providers/clip_board_provider.dart';
+import 'package:copy_pasta/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
 import 'package:passcode_screen/passcode_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-const storedPasscode = '123456';
+var storedPasscode = '';
+bool isAuthenticated = false;
 
 class LockScreen extends ConsumerStatefulWidget {
   const LockScreen({Key? key}) : super(key: key);
@@ -18,9 +22,24 @@ class LockScreen extends ConsumerStatefulWidget {
 class _LockScreenState extends ConsumerState<LockScreen> {
   final StreamController<bool> _verificationNotifier =
       StreamController<bool>.broadcast();
+  final clipBoardProvider =
+      ChangeNotifierProvider<ClipBoardProvider>((ref) => ClipBoardProvider());
 
-  bool isAuthenticated = false;
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    //_showSavedValue();
+  }
+
+  _showSavedValue() async {
+    SharedPreferences sPrefs = await SharedPreferences.getInstance();
+    setState(() {
+      storedPasscode = sPrefs.getString("KEY_1").toString();
+    });
+    //print(storedPasscode);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +107,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   }
 
   _onPasscodeEntered(String enteredPasscode) {
+    storedPasscode = ref.watch(clipBoardProvider).passw;
     bool isValid = storedPasscode == enteredPasscode;
     _verificationNotifier.add(isValid);
     if (isValid) {
@@ -97,8 +117,10 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     }
     if (isAuthenticated) {
       Future.delayed(Duration.zero, () {
-        Navigator.pushNamedAndRemoveUntil(
-            context, 'home', (Route<dynamic> route) => false);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       });
     }
   }

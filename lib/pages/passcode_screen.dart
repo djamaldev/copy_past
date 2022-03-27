@@ -9,8 +9,7 @@ import 'package:passcode_screen/keyboard.dart';
 import 'package:passcode_screen/passcode_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-var storedPasscode = '';
-bool isAuthenticated = false;
+//var storedPasscode = '';
 
 class LockScreen extends ConsumerStatefulWidget {
   const LockScreen({Key? key}) : super(key: key);
@@ -24,7 +23,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       StreamController<bool>.broadcast();
   final clipBoardProvider =
       ChangeNotifierProvider<ClipBoardProvider>((ref) => ClipBoardProvider());
-
+  bool isAuthenticated = false;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -36,7 +35,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   _showSavedValue() async {
     SharedPreferences sPrefs = await SharedPreferences.getInstance();
     setState(() {
-      storedPasscode = sPrefs.getString("KEY_1").toString();
+      //storedPasscode = sPrefs.getString("KEY_1").toString();
     });
     //print(storedPasscode);
   }
@@ -107,7 +106,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   }
 
   _onPasscodeEntered(String enteredPasscode) {
-    storedPasscode = ref.watch(clipBoardProvider).passw;
+    var storedPasscode = ref.watch(clipBoardProvider).passw;
     bool isValid = storedPasscode == enteredPasscode;
     _verificationNotifier.add(isValid);
     if (isValid) {

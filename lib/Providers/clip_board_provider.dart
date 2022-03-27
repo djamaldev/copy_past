@@ -10,12 +10,12 @@ class ClipBoardProvider extends ChangeNotifier {
   bool _isFound = false;
   String _passw = '';
   SharedPreferences? _prefs;
-  //String _savedPassw = '';
+  final bool _enabled = false;
 
   List get taskList => [..._taskList];
   bool get isFound => _isFound;
   String get passw => _passw;
-  //String get savedPssw => _savedPassw;
+  bool get enabled => _enabled;
   SharedPreferences? get prefs => _prefs;
 
   copyText(String text) async {
@@ -76,7 +76,7 @@ class ClipBoardProvider extends ChangeNotifier {
   }
 
   setPasscode(String passcode) async {
-    //_isPasscodeAdded = true;
+    //_enabled = true;
     _passw = passcode;
     _prefs = await SharedPreferences.getInstance();
     _prefs!.setString("KEY_1", _passw.toString());
@@ -88,8 +88,8 @@ class ClipBoardProvider extends ChangeNotifier {
     //_isPasscodeAdded = true;
 
     _prefs = await SharedPreferences.getInstance();
-    _prefs!.clear();
     _passw = '';
+    _prefs!.clear();
     //_prefs!.setBool('KEY_2', _isPasscodeAdded!);
     notifyListeners();
   }
@@ -100,9 +100,12 @@ class ClipBoardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  getValue() async {
+  getSavedPasswcode() async {
     _prefs = await SharedPreferences.getInstance();
-    _prefs!.getString('KEY_1').toString();
+    if (!_prefs!.containsKey('KEY_1')) {
+      return;
+    }
+    _passw = _prefs!.getString('KEY_1').toString();
     notifyListeners();
   }
 }

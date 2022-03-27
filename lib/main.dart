@@ -1,5 +1,4 @@
 import 'package:copy_pasta/pages/home_page.dart';
-import 'package:copy_pasta/pages/passcode_screen.dart';
 import 'package:copy_pasta/services/db_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,7 +30,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: storedPasscode.isEmpty ? const HomePage() : const LockScreen(),
+      home: const HomePage(),
     );
   }
 }

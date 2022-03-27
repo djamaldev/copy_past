@@ -1,5 +1,4 @@
 import 'package:copy_pasta/Providers/clip_board_provider.dart';
-import 'package:copy_pasta/pages/passcode_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,21 +16,27 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   var passcodeController = TextEditingController();
   var confirmPasscodeController = TextEditingController();
   bool isActve = false;
+  var storedPasscode = '';
 
   @override
   void initState() {
     super.initState();
     ref.read(clipBoardProvider.notifier).getAllCopiedText();
-    _showSavedValue();
+    ref.read(clipBoardProvider.notifier).getSavedPasswcode();
+    //_showSavedValue();
   }
 
   _showSavedValue() async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-    String val = '';
+    var value = '';
     setState(() {
-      val = _prefs.getString('KEY_1').toString();
+      value = _prefs.getString('KEY_1').toString();
     });
-    if (val.isEmpty || val == '') {
+    if (value.isNotEmpty) {
+      setState(() {
+        isActve = true;
+      });
+    } else {
       setState(() {
         isActve = false;
       });
@@ -83,6 +88,13 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       .read(clipBoardProvider)
                       .setPasscode(passcodeController.text.toString());
                   storedPasscode = ref.watch(clipBoardProvider).passw;
+                  if (storedPasscode.isNotEmpty) {
+                    //print(value);
+                    setState(() {
+                      isActve = true;
+                    });
+                  }
+
                   Navigator.pop(context);
                 },
                 child: const Text('Set'),
@@ -123,6 +135,12 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    storedPasscode = ref.watch(clipBoardProvider).passw;
+    if (storedPasscode.isEmpty) {
+      setState(() {
+        isActve = false;
+      });
+    }
     return Drawer(
       child: Column(
         children: [

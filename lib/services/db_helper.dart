@@ -1,11 +1,13 @@
 import 'package:sqflite/sqflite.dart';
 
 import 'clip_board.dart';
+import 'password_list_manager.dart';
 
 class DBHelper {
   static Database? _db;
-  static const int _version = 1;
+  static const int _version = 2;
   static const String _tableName = 'copypast';
+  static const String _passwordList = 'passwordList';
 
   static Future<void> initDB() async {
     if (_db != null) {
@@ -13,11 +15,14 @@ class DBHelper {
       return;
     } else {
       try {
-        String _path = await getDatabasesPath() + 'copypast.db';
+        String _path = await getDatabasesPath() + 'copypast1.db';
         _db = await openDatabase(_path, version: _version,
             onCreate: (Database db, int version) async {
           await db.execute(
             'CREATE TABLE $_tableName(id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT)',
+          );
+          await db.execute(
+            'CREATE TABLE $_passwordList(id INTEGER PRIMARY KEY AUTOINCREMENT, password TEXT)',
           );
         });
       } catch (e) {
@@ -49,32 +54,31 @@ class DBHelper {
     int? exists = Sqflite.firstIntValue(result);
     return exists == 1;
   }
-  /*static Future<int> insert(Task? task) async {
-    return _db!.insert(_tableName, task!.toJson());
+
+  /// *********************Password table */
+
+  static Future<int> insertPassw(PasswordListManager? passw) async {
+    return _db!.insert(_passwordList, {'password ': passw!.password});
   }
 
-  static Future<int> delete(Task? task) async {
-    return _db!.delete(_tableName, where: 'id = ?', whereArgs: [task!.id]);
+  static Future<List<Map<String, dynamic>>> queryPassword() async {
+    return _db!.query(_passwordList, orderBy: 'id DESC', columns: ['password']);
   }
 
-  static Future<int> deleteAll() async {
-    return _db!.delete(_tableName);
+  static Future<int> deleteAllPassword() async {
+    return _db!.delete(_passwordList);
   }
 
-  static Future<List<Map<String, dynamic>>> query() async {
-    return _db!.query(_tableName);
+  static Future<int> deletePassword(String passw) async {
+    return await _db!
+        .delete(_passwordList, where: 'password = ?', whereArgs: [passw]);
   }
 
-  static Future<int> updatToCompletedTask(int id) async {
-    return _db!.rawUpdate('''
-    UPDATE tasks
-    SET isCompleted = ?
-    WHERE id = ?
-    ''', [1, id]);
+  static Future<bool> passwExists(String passw) async {
+    var result = await _db!.rawQuery(
+      'SELECT EXISTS(SELECT 1 FROM $_passwordList WHERE password="$passw")',
+    );
+    int? exists = Sqflite.firstIntValue(result);
+    return exists == 1;
   }
-
-  static Future<List<Map<String, dynamic>>> getCategoryTask(
-      int category) async {
-    return _db!.rawQuery('SELECT * FROM tasks WHERE category=?', [category]);
-  }*/
 }

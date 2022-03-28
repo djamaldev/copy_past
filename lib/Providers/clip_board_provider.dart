@@ -1,4 +1,5 @@
 import 'package:copy_pasta/services/db_helper.dart';
+import 'package:copy_pasta/services/password_list_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,15 +8,19 @@ import '../services/clip_board.dart';
 
 class ClipBoardProvider extends ChangeNotifier {
   List<Map<String, dynamic>> _taskList = [];
+  List<Map<String, dynamic>> _passwList = [];
   bool _isFound = false;
+  bool _isPasswFound = false;
   String _passw = '';
   SharedPreferences? _prefs;
-  final bool _enabled = false;
+  //final bool _enabled = false;
 
   List get taskList => [..._taskList];
+  List get passwList => [..._passwList];
   bool get isFound => _isFound;
+  bool get isPasswFound => _isPasswFound;
   String get passw => _passw;
-  bool get enabled => _enabled;
+  bool get enabled => _passw.isNotEmpty ? true : false;
   SharedPreferences? get prefs => _prefs;
 
   copyText(String text) async {
@@ -23,7 +28,7 @@ class ClipBoardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  coyOtherText(String text) async {
+  addOtherText(String text) async {
     Clipboard.setData(ClipboardData(text: text)).then(
       (_) async {
         _isFound = await DBHelper.texExists(text);
@@ -40,12 +45,7 @@ class ClipBoardProvider extends ChangeNotifier {
 
   getAllCopiedText() async {
     _taskList = await DBHelper.query();
-    //print('list = $_taskList');
-    for (int index = 0; index < _taskList.length; index++) {
-      //print('list = ${_taskList[index]['text']}');
-    }
     notifyListeners();
-    //return _taskList;
   }
 
   setData() {
@@ -106,6 +106,55 @@ class ClipBoardProvider extends ChangeNotifier {
       return;
     }
     _passw = _prefs!.getString('KEY_1').toString();
+    notifyListeners();
+  }
+
+  /// ****** Password Manager */////////////////
+
+  addOtherPassword(String text) async {
+    Clipboard.setData(ClipboardData(text: text)).then(
+      (_) async {
+        _isPasswFound = await DBHelper.passwExists(text);
+        if (_isPasswFound == false) {
+          await DBHelper.insertPassw(PasswordListManager(password: text));
+          getAllCopiedPassword();
+        } else {
+          Null;
+        }
+      },
+    );
+    notifyListeners();
+  }
+
+  getAllCopiedPassword() async {
+    _passwList = await DBHelper.queryPassword();
+    notifyListeners();
+  }
+
+  setPasswordData() {
+    Clipboard.getData(Clipboard.kTextPlain).then(
+      (value) async {
+        _isPasswFound = await DBHelper.passwExists(value!.text!);
+        if (_isPasswFound == false) {
+          await DBHelper.insertPassw(PasswordListManager(password: value.text));
+          getAllCopiedPassword();
+        } else {
+          Null;
+        }
+      },
+    );
+    notifyListeners();
+  }
+
+  deleteAllCopiedPassword() async {
+    await DBHelper.deleteAllPassword();
+    _passwList = [];
+    notifyListeners();
+  }
+
+  Future<void> deletePasswordAtIndex(String text) async {
+    await DBHelper.deletePassword(text);
+    _passwList = await DBHelper.queryPassword();
     notifyListeners();
   }
 }

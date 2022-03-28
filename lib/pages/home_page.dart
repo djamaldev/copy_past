@@ -33,30 +33,26 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.initState();
     ref.read(clipBoardProvider.notifier).getAllCopiedText();
     ref.read(clipBoardProvider.notifier).getSavedPasswcode();
-    //print(storedPasscode);
   }
-
-  /*_showSavedValue() async {
-    SharedPreferences sPrefs = await SharedPreferences.getInstance();
-    //sPrefs.clear();
-    setState(() {
-      storedPasscode = sPrefs.getString('KEY_1').toString();
-    });
-  }*/
 
   Future<void> _onRfresh() async {
     await ref.read(clipBoardProvider).getAllCopiedText();
   }
 
   _showDialog() async {
-    //await Future.delayed(const Duration(milliseconds: 30));
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('copyPast'),
-          content: const Text(
-              'Do you want to add copied text from system to the list ?'),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          contentPadding: const EdgeInsets.only(top: 10.0),
+          title: const Center(child: Text('copyPast')),
+          content: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10.0),
+            child: Text(
+                'Do you want to add copied text from system to the list ?'),
+          ),
           actions: [
             TextButton(
                 onPressed: () {
@@ -84,10 +80,17 @@ class _HomePageState extends ConsumerState<HomePage> {
         var textController = TextEditingController();
         //var messageController = TextEditingController();
         return AlertDialog(
-          title: const Text('Contact Us'),
-          content: TextField(
-            controller: textController,
-            decoration: const InputDecoration(hintText: 'Enter text here'),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          contentPadding: const EdgeInsets.only(top: 10.0),
+          title: const Center(child: Text('Add other text')),
+          content: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+            child: TextField(
+              controller: textController,
+              decoration: const InputDecoration(hintText: 'Enter text here'),
+            ),
           ),
           actions: [
             TextButton(
@@ -96,7 +99,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             TextButton(
               onPressed: () {
-                ref.read(clipBoardProvider).coyOtherText(textController.text);
+                ref.read(clipBoardProvider).addOtherText(textController.text);
                 Navigator.pop(context);
               },
               child: const Text('Add'),
@@ -225,6 +228,9 @@ class _HomePageState extends ConsumerState<HomePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+          contentPadding: const EdgeInsets.only(top: 10.0),
           title: const Text(
             "Reset passcode",
             style: TextStyle(color: Colors.black87),
@@ -259,13 +265,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Widget _buildChild(BuildContext ctx) {
     var data = ref.watch(clipBoardProvider).taskList;
-    //ref.read(clipBoardProvider.notifier).getSavedPasswcode();
-    //storedPasscode = ref.watch(clipBoardProvider).passw;
-    print(storedPasscode);
     if (ref.watch(clipBoardProvider).passw == '' || isAuthenticated) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Edit product'),
+          title: const Text('ClipBoard manager'),
+          centerTitle: true,
           actions: [
             IconButton(
               onPressed: () {
@@ -273,8 +277,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                   context: context,
                   builder: (context) {
                     return AlertDialog(
-                      title: const Text('copyPast'),
-                      content: const Text('Do you want to delete all text ?'),
+                      shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10.0))),
+                      contentPadding: const EdgeInsets.only(top: 10.0),
+                      title: const Center(child: Text('copyPast')),
+                      content: const Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 10.0),
+                          child: Text('Do you want to delete all texts ?')),
                       actions: [
                         TextButton(
                             onPressed: () {

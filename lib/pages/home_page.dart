@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:copy_pasta/Providers/change_tehem_state.dart';
 import 'package:copy_pasta/Providers/clip_board_provider.dart';
 import 'package:copy_pasta/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +34,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.initState();
     ref.read(clipBoardProvider.notifier).getAllCopiedText();
     ref.read(clipBoardProvider.notifier).getSavedPasswcode();
+    ref.read(clipBoardProvider).getdarkTheme();
   }
 
   Future<void> _onRfresh() async {
@@ -265,9 +267,13 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Widget _buildChild(BuildContext ctx) {
     var data = ref.watch(clipBoardProvider).taskList;
+    final isDarkMode = ref.watch(changeTheme).darkMode;
+    final theme = Theme.of(context);
     if (ref.watch(clipBoardProvider).passw == '' || isAuthenticated) {
       return Scaffold(
+        //backgroundColor: theme.backgroundColor,
         appBar: AppBar(
+          //backgroundColor: theme.backgroundColor,
           title: const Text('ClipBoard manager'),
           centerTitle: true,
           actions: [
@@ -346,9 +352,14 @@ class _HomePageState extends ConsumerState<HomePage> {
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
           onPressed: () {
-            setState(() {
+            if (isDarkMode) {
+              ref.read(changeTheme.notifier).enableLightMode();
+            } else {
+              ref.read(changeTheme.notifier).enableDarkMode();
+            }
+            /*setState(() {
               _showDialog();
-            });
+            });*/
           },
         ),
       );

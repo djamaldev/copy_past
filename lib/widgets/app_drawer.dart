@@ -1,3 +1,4 @@
+import 'package:copy_pasta/Providers/change_tehem_state.dart';
 import 'package:copy_pasta/Providers/clip_board_provider.dart';
 import 'package:copy_pasta/pages/password_list.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   var passcodeController = TextEditingController();
   var confirmPasscodeController = TextEditingController();
   bool isActve = false;
+  //bool isDarkMode = false;
   String text = 'Add passcode';
+  //String textDark = 'Dark mode';
   var storedPasscode = '';
   final GlobalKey<FormState> _formKey = GlobalKey();
 
@@ -177,57 +180,94 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   @override
   Widget build(BuildContext context) {
     storedPasscode = ref.watch(clipBoardProvider).passw;
-    return Drawer(
-      child: Column(
-        children: [
-          AppBar(
-            title: const Text('CopyPast'),
-            automaticallyImplyLeading: true,
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.shop),
-            title: const Text('Home'),
-            onTap: () {},
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.payment),
-            title: const Text('Orders'),
-            onTap: () {},
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.list),
-            title: const Text('Passwords list'),
-            onTap: () {
-              Future.delayed(Duration.zero, () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PasswordList()),
-                );
-              });
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.password),
-            trailing: Switch(
-              value: isActve,
-              onChanged: (val) {
-                setState(() {
-                  isActve = val;
+    var isDarkMode = ref.watch(changeTheme).darkMode;
+    return Container(
+      decoration: BoxDecoration(
+        border:
+            Border.all(color: isDarkMode ? Colors.white : Colors.transparent),
+      ),
+      child: Drawer(
+        child: Column(
+          children: [
+            AppBar(
+              title: const Text('CopyPast'),
+              automaticallyImplyLeading: true,
+            ),
+            ListTile(
+              leading: const Icon(Icons.shop),
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            Divider(
+              color: isDarkMode ? Colors.white : Colors.grey,
+            ),
+            ListTile(
+              leading: const Icon(Icons.list),
+              title: const Text('Passwords list'),
+              onTap: () {
+                Future.delayed(Duration.zero, () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const PasswordList()),
+                  );
                 });
-                if (isActve) {
-                  _showPasscodeDialog();
+              },
+            ),
+            Divider(
+              color: isDarkMode ? Colors.white : Colors.grey,
+            ),
+            ListTile(
+              leading: const Icon(Icons.password),
+              trailing: Switch(
+                value: isActve,
+                onChanged: (val) {
+                  setState(() {
+                    isActve = val;
+                  });
+                  if (isActve) {
+                    _showPasscodeDialog();
+                  } else {
+                    _showRemoveDialog();
+                  }
+                },
+              ),
+              title: Text(text),
+            ),
+            ListTile(
+              leading: const Icon(Icons.language_outlined),
+              title: const Text('Language'),
+              onTap: () {},
+            ),
+            Divider(
+              color: isDarkMode ? Colors.white : Colors.grey,
+            ),
+            ListTile(
+              leading: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+              title:
+                  Text(isDarkMode ? 'Enable light mode' : 'Enable dark mode'),
+              /*trailing: IconButton(
+                onPressed: () {
+                  if (isDarkMode) {
+                    ref.read(changeTheme.notifier).enableLightMode();
+                  } else {
+                    ref.read(changeTheme.notifier).enableDarkMode();
+                  }
+                },
+                icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+              ),*/
+              onTap: () {
+                if (isDarkMode) {
+                  ref.read(changeTheme.notifier).enableLightMode();
                 } else {
-                  _showRemoveDialog();
+                  ref.read(changeTheme.notifier).enableDarkMode();
                 }
               },
             ),
-            title: Text(text),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

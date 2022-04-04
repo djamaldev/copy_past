@@ -1,3 +1,5 @@
+import 'package:copy_pasta/Providers/change_tehem_state.dart';
+import 'package:copy_pasta/Providers/language_changer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,6 +21,7 @@ class _PasswordListState extends ConsumerState<PasswordList> {
   void initState() {
     super.initState();
     ref.read(clipBoardProvider.notifier).getAllCopiedPassword();
+    ref.read(changeLangauge).getLan();
   }
 
   Future<void> _onRfresh() async {
@@ -26,6 +29,7 @@ class _PasswordListState extends ConsumerState<PasswordList> {
   }
 
   _showDialog() async {
+    final _lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (context) {
@@ -34,22 +38,23 @@ class _PasswordListState extends ConsumerState<PasswordList> {
               borderRadius: BorderRadius.all(Radius.circular(10.0))),
           contentPadding: const EdgeInsets.only(top: 10.0),
           title: const Center(child: Text('copyPast')),
-          content: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-              child: Text('Do you want to add password to the list ?')),
+          content: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+              child: Text('${_lan.getTexts('add_passw_alert')}')),
           actions: [
             TextButton(
                 onPressed: () {
                   ref.read(clipBoardProvider).setPasswordData();
                   Navigator.of(context).pop();
                 },
-                child: const Text('Ok')),
+                child: Text('${_lan.getTexts('ok')}')),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 showDialogWithFields();
               },
-              child: const Text('Add other text'),
+              child: Text('${_lan.getTexts('other_passw')}'),
             )
           ],
         );
@@ -58,6 +63,7 @@ class _PasswordListState extends ConsumerState<PasswordList> {
   }
 
   void showDialogWithFields() {
+    final _lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (_) {
@@ -67,19 +73,20 @@ class _PasswordListState extends ConsumerState<PasswordList> {
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(10.0))),
           contentPadding: const EdgeInsets.only(top: 10.0),
-          title: const Center(child: Text('Add password')),
+          title: Center(child: Text('${_lan.getTexts('add_password')}')),
           content: Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
             child: TextField(
               controller: textController,
-              decoration: const InputDecoration(hintText: 'Enter text here'),
+              decoration:
+                  InputDecoration(hintText: '${_lan.getTexts('enter_txt')}'),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('${_lan.getTexts('cancel')}'),
             ),
             TextButton(
               onPressed: () {
@@ -88,7 +95,34 @@ class _PasswordListState extends ConsumerState<PasswordList> {
                     .addOtherPassword(textController.text);
                 Navigator.pop(context);
               },
-              child: const Text('Add'),
+              child: Text('${_lan.getTexts('add')}'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _copiedToClipBoardDialog() async {
+    final _lan = ref.watch(changeLangauge);
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          contentPadding: const EdgeInsets.only(top: 10.0),
+          title: const Center(child: Text('copyPast')),
+          content: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+              child: Text('${_lan.getTexts('copied_txt')}')),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('${_lan.getTexts('ok')}'),
             ),
           ],
         );
@@ -99,9 +133,11 @@ class _PasswordListState extends ConsumerState<PasswordList> {
   @override
   Widget build(BuildContext context) {
     var data = ref.watch(clipBoardProvider).passwList;
+    final isDarkMode = ref.watch(changeTheme).darkMode;
+    final _lan = ref.watch(changeLangauge);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Password manager'),
+        title: Text('${_lan.getTexts('passw_manager')}'),
         centerTitle: true,
         actions: [
           IconButton(
@@ -114,10 +150,11 @@ class _PasswordListState extends ConsumerState<PasswordList> {
                         borderRadius: BorderRadius.all(Radius.circular(10.0))),
                     contentPadding: const EdgeInsets.only(top: 10.0),
                     title: const Center(child: Text('copyPast')),
-                    content: const Padding(
-                        padding: EdgeInsets.symmetric(
+                    content: Padding(
+                        padding: const EdgeInsets.symmetric(
                             horizontal: 10.0, vertical: 10.0),
-                        child: Text('Do you want to delete all password ?')),
+                        child:
+                            Text('${_lan.getTexts('delete_all_passw_alert')}')),
                     actions: [
                       TextButton(
                           onPressed: () {
@@ -126,12 +163,12 @@ class _PasswordListState extends ConsumerState<PasswordList> {
                                 .deleteAllCopiedPassword();
                             Navigator.of(context).pop();
                           },
-                          child: const Text('Yes')),
+                          child: Text('${_lan.getTexts('ok')}')),
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
-                        child: const Text('Cancel'),
+                        child: Text('${_lan.getTexts('cancel')}'),
                       )
                     ],
                   );
@@ -143,40 +180,82 @@ class _PasswordListState extends ConsumerState<PasswordList> {
         ],
       ),
       //drawer: const AppDrawer(),
-      body: RefreshIndicator(
-        onRefresh: _onRfresh,
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: data.length,
-          itemBuilder: (context, index) {
-            return Column(
-              children: [
-                ListTile(
-                  leading: IconButton(
-                    icon: const Icon(Icons.copy),
-                    onPressed: () {
-                      ref
-                          .read(clipBoardProvider)
-                          .copyText(data[index]['password']);
-                    },
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _onRfresh,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: data.length,
+            itemBuilder: (context, index) {
+              return Column(
+                children: [
+                  ListTile(
+                    leading: IconButton(
+                      icon: const Icon(Icons.copy),
+                      onPressed: () {
+                        ref
+                            .read(clipBoardProvider)
+                            .copyText(data[index]['password']);
+                        _copiedToClipBoardDialog();
+                      },
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        onPressed:
+                        () {
+                          showDialog(
+                            context: context,
+                            builder: (_) {
+                              return AlertDialog(
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                        Radius.circular(10.0))),
+                                contentPadding:
+                                    const EdgeInsets.only(top: 10.0),
+                                title: const Center(child: Text('copyPast')),
+                                content: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10.0, vertical: 10.0),
+                                    child:
+                                        Text('${_lan.getTexts('delete_txt')}')),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      ref
+                                          .read(clipBoardProvider)
+                                          .deletePasswordAtIndex(data[index]
+                                                  ['password']
+                                              .toString());
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('${_lan.getTexts('ok')}'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('${_lan.getTexts('cancel')}'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        };
+                        //print(index);
+                      },
+                    ),
+                    title: Text(data[index]['password'].toString()),
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      ref.read(clipBoardProvider).deletePasswordAtIndex(
-                          data[index]['password'].toString());
-                      //print(index);
-                    },
-                  ),
-                  title: Text(data[index]['password'].toString()),
-                ),
-                const Divider(height: 1.0)
-              ],
-            );
-          },
+                  const Divider(height: 1.0)
+                ],
+              );
+            },
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: isDarkMode ? Colors.white : Colors.red,
         child: const Icon(Icons.add),
         onPressed: () {
           setState(() {

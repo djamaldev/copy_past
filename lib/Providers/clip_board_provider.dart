@@ -1,4 +1,3 @@
-import 'package:copy_pasta/services/dark_teheme_preferences.dart';
 import 'package:copy_pasta/services/db_helper.dart';
 import 'package:copy_pasta/services/password_list_manager.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +13,8 @@ class ClipBoardProvider extends ChangeNotifier {
   bool _isPasswFound = false;
   String _passw = '';
   SharedPreferences? _prefs;
-  bool _darkTheme = false;
-  DarkThemePreference darkThemePreference = DarkThemePreference();
+  //bool _darkTheme = false;
+  //DarkThemePreference darkThemePreference = DarkThemePreference();
   //var _themeMode = ThemeMode.light;
 
   List get taskList => [..._taskList];
@@ -25,24 +24,6 @@ class ClipBoardProvider extends ChangeNotifier {
   String get passw => _passw;
   bool get enabled => _passw.isNotEmpty ? true : false;
   SharedPreferences? get prefs => _prefs;
-  bool get darkTheme => _darkTheme;
-  //ThemeMode get themeMode => _themeMode;
-
-  setdarkTheme(value) async {
-    _darkTheme = value;
-    //darkThemePreference.setDarkTheme(value);
-    _prefs = await SharedPreferences.getInstance();
-    _prefs!.setBool('dark', _darkTheme);
-    notifyListeners();
-  }
-
-  getdarkTheme() async {
-    //_darkTheme = value;
-    //darkThemePreference.setDarkTheme(value);
-    _prefs = await SharedPreferences.getInstance();
-    _prefs!.getBool('dark');
-    notifyListeners();
-  }
 
   copyText(String text) async {
     await Clipboard.setData(ClipboardData(text: text));

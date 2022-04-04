@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:copy_pasta/Providers/change_tehem_state.dart';
 import 'package:copy_pasta/Providers/clip_board_provider.dart';
+import 'package:copy_pasta/Providers/language_changer.dart';
 import 'package:copy_pasta/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,7 +35,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.initState();
     ref.read(clipBoardProvider.notifier).getAllCopiedText();
     ref.read(clipBoardProvider.notifier).getSavedPasswcode();
-    ref.read(clipBoardProvider).getdarkTheme();
+    ref.read(changeTheme).getSavedTheme();
+    ref.read(changeLangauge).getLan();
   }
 
   Future<void> _onRfresh() async {
@@ -42,6 +44,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   _showDialog() async {
+    final _lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (context) {
@@ -50,10 +53,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               borderRadius: BorderRadius.all(Radius.circular(10.0))),
           contentPadding: const EdgeInsets.only(top: 10.0),
           title: const Center(child: Text('copyPast')),
-          content: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.0),
-            child: Text(
-                'Do you want to add copied text from system to the list ?'),
+          content: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: Text('${_lan.getTexts('alert_copied_txt')}'),
           ),
           actions: [
             TextButton(
@@ -61,13 +63,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ref.read(clipBoardProvider).setData();
                   Navigator.of(context).pop();
                 },
-                child: const Text('Ok')),
+                child: Text('${_lan.getTexts('ok')}')),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 showDialogWithFields();
               },
-              child: const Text('Add other text'),
+              child: Text('${_lan.getTexts('add_other_txt')}'),
             )
           ],
         );
@@ -76,6 +78,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void showDialogWithFields() {
+    final _lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (_) {
@@ -85,26 +88,27 @@ class _HomePageState extends ConsumerState<HomePage> {
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(10.0))),
           contentPadding: const EdgeInsets.only(top: 10.0),
-          title: const Center(child: Text('Add other text')),
+          title: const Center(child: Text('CopyPast')),
           content: Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
             child: TextField(
               controller: textController,
-              decoration: const InputDecoration(hintText: 'Enter text here'),
+              decoration:
+                  InputDecoration(hintText: '${_lan.getTexts('enter_txt')}'),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('${_lan.getTexts('cancel')}'),
             ),
             TextButton(
               onPressed: () {
                 ref.read(clipBoardProvider).addOtherText(textController.text);
                 Navigator.pop(context);
               },
-              child: const Text('Add'),
+              child: Text('${_lan.getTexts('add')}'),
             ),
           ],
         );
@@ -112,21 +116,24 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  _defaultLockScreenButton(BuildContext ctx) => MaterialButton(
-        color: Theme.of(context).primaryColor,
-        child: const Text('Authenticate'),
-        onPressed: () {
-          _showLockScreen(
-            ctx,
-            opaque: false,
-            cancelButton: const Text(
-              'Cancel',
-              style: TextStyle(fontSize: 16, color: Colors.white),
-              semanticsLabel: 'Cancel',
-            ),
-          );
-        },
-      );
+  _defaultLockScreenButton(BuildContext ctx) {
+    final _lan = ref.watch(changeLangauge);
+    return MaterialButton(
+      color: Theme.of(context).primaryColor,
+      child: Text('${_lan.getTexts('authenticate')}'),
+      onPressed: () {
+        _showLockScreen(
+          ctx,
+          opaque: false,
+          cancelButton: Text(
+            '${_lan.getTexts('cancel')}',
+            style: const TextStyle(fontSize: 16, color: Colors.white),
+            semanticsLabel: '${_lan.getTexts('cancel')}',
+          ),
+        );
+      },
+    );
+  }
 
   _showLockScreen(
     BuildContext ctx, {
@@ -136,6 +143,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     required Widget cancelButton,
     List<String>? digits,
   }) {
+    final _lan = ref.watch(changeLangauge);
     Future.delayed(Duration.zero, () {
       Navigator.push(
         context,
@@ -144,26 +152,26 @@ class _HomePageState extends ConsumerState<HomePage> {
           pageBuilder: (context, animation, secondaryAnimation) =>
               PasscodeScreen(
             //key: _formKey,
-            title: const Text(
-              'Enter App Passcode',
+            title: Text(
+              '${_lan.getTexts('enter_app_passcode')}',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 28),
+              style: const TextStyle(color: Colors.white, fontSize: 28),
             ),
             //circleUIConfig: circleUIConfig,
             keyboardUIConfig: keyboardUIConfig,
             passwordEnteredCallback: _onPasscodeEntered,
             cancelButton: cancelButton,
-            deleteButton: const Text(
-              'Delete',
-              style: TextStyle(fontSize: 16, color: Colors.white),
-              semanticsLabel: 'Delete',
+            deleteButton: Text(
+              '${_lan.getTexts('delete')}',
+              style: const TextStyle(fontSize: 16, color: Colors.white),
+              semanticsLabel: '${_lan.getTexts('delete')}',
             ),
             shouldTriggerVerification: _verificationNotifier.stream,
             backgroundColor: Colors.black.withOpacity(0.8),
             cancelCallback: _onPasscodeCancelled,
             digits: digits,
             passwordDigits: 6,
-            bottomWidget: _buildPasscodeRestoreButton(),
+            //bottomWidget: _buildPasscodeRestoreButton(),
           ),
         ),
       );
@@ -192,7 +200,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.dispose();
   }
 
-  _buildPasscodeRestoreButton() => Align(
+  /*_buildPasscodeRestoreButton() => Align(
         alignment: Alignment.bottomCenter,
         child: Container(
           margin: const EdgeInsets.only(bottom: 10.0, top: 20.0),
@@ -205,15 +213,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                   color: Colors.white,
                   fontWeight: FontWeight.w300),
             ),
-            onPressed: _resetAppPassword,
+            onPressed: () {},
             // splashColor: Colors.white.withOpacity(0.4),
             // highlightColor: Colors.white.withOpacity(0.2),
             // ),
           ),
         ),
-      );
+      );*/
 
-  _resetAppPassword() {
+  /*_resetAppPassword() {
     Navigator.maybePop(context).then((result) {
       if (!result) {
         return;
@@ -223,9 +231,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         //TODO: Clear your stored passcode here
       });
     });
-  }
+  }*/
 
-  _showRestoreDialog(VoidCallback onAccepted) {
+  /*_showRestoreDialog(VoidCallback onAccepted) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -263,18 +271,45 @@ class _HomePageState extends ConsumerState<HomePage> {
         );
       },
     );
+  }*/
+
+  _copiedToClipBoardDialog() async {
+    final _lan = ref.watch(changeLangauge);
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          contentPadding: const EdgeInsets.only(top: 10.0),
+          title: const Center(child: Text('copyPast')),
+          content: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+              child: Text('${_lan.getTexts('copied_txt')}')),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('${_lan.getTexts('ok')}'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildChild(BuildContext ctx) {
+    final _lan = ref.watch(changeLangauge);
     var data = ref.watch(clipBoardProvider).taskList;
     final isDarkMode = ref.watch(changeTheme).darkMode;
     final theme = Theme.of(context);
     if (ref.watch(clipBoardProvider).passw == '' || isAuthenticated) {
       return Scaffold(
-        //backgroundColor: theme.backgroundColor,
         appBar: AppBar(
           //backgroundColor: theme.backgroundColor,
-          title: const Text('ClipBoard manager'),
+          title: Text('${_lan.getTexts('clipBoard_manager')}'),
           centerTitle: true,
           actions: [
             IconButton(
@@ -288,22 +323,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                               BorderRadius.all(Radius.circular(10.0))),
                       contentPadding: const EdgeInsets.only(top: 10.0),
                       title: const Center(child: Text('copyPast')),
-                      content: const Padding(
-                          padding: EdgeInsets.symmetric(
+                      content: Padding(
+                          padding: const EdgeInsets.symmetric(
                               horizontal: 10.0, vertical: 10.0),
-                          child: Text('Do you want to delete all texts ?')),
+                          child: Text('${_lan.getTexts('delete_all_txt')}')),
                       actions: [
                         TextButton(
                             onPressed: () {
                               ref.read(clipBoardProvider).deleteAllCopiedText();
                               Navigator.of(context).pop();
                             },
-                            child: const Text('Yes')),
+                            child: const Text('Ok')),
                         TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
-                          child: const Text('Cancel'),
+                          child: Text('${_lan.getTexts('cancel')}'),
                         )
                       ],
                     );
@@ -314,52 +349,84 @@ class _HomePageState extends ConsumerState<HomePage> {
             )
           ],
         ),
-        drawer: const AppDrawer(),
-        body: RefreshIndicator(
-          onRefresh: _onRfresh,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: data.length,
-            itemBuilder: (context, index) {
-              return Column(
-                children: [
-                  ListTile(
-                    leading: IconButton(
-                      icon: const Icon(Icons.copy),
-                      onPressed: () {
-                        ref
-                            .read(clipBoardProvider)
-                            .copyText(data[index]['text']);
-                      },
+        drawer: const SafeArea(child: AppDrawer()),
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _onRfresh,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: data.length,
+              itemBuilder: (context, index) {
+                return Column(
+                  children: [
+                    ListTile(
+                      leading: IconButton(
+                        icon: const Icon(Icons.copy),
+                        onPressed: () {
+                          ref
+                              .read(clipBoardProvider)
+                              .copyText(data[index]['text']);
+                          _copiedToClipBoardDialog();
+                        },
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) {
+                              return AlertDialog(
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                        Radius.circular(10.0))),
+                                contentPadding:
+                                    const EdgeInsets.only(top: 10.0),
+                                title: const Center(child: Text('copyPast')),
+                                content: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10.0, vertical: 10.0),
+                                    child:
+                                        Text('${_lan.getTexts('delete_txt')}')),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      ref
+                                          .read(clipBoardProvider)
+                                          .deleteTextAtIndex(
+                                              data[index]['text'].toString());
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('${_lan.getTexts('ok')}'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('${_lan.getTexts('cancel')}'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          //print(index);
+                        },
+                      ),
+                      title: Text(data[index]['text'].toString()),
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        ref
-                            .read(clipBoardProvider)
-                            .deleteTextAtIndex(data[index]['text'].toString());
-                        print(index);
-                      },
-                    ),
-                    title: Text(data[index]['text'].toString()),
-                  ),
-                  const Divider(height: 1.0)
-                ],
-              );
-            },
+                    const Divider(height: 1.0)
+                  ],
+                );
+              },
+            ),
           ),
         ),
         floatingActionButton: FloatingActionButton(
+          backgroundColor: isDarkMode ? Colors.white : Colors.red,
           child: const Icon(Icons.add),
           onPressed: () {
-            if (isDarkMode) {
-              ref.read(changeTheme.notifier).enableLightMode();
-            } else {
-              ref.read(changeTheme.notifier).enableDarkMode();
-            }
-            /*setState(() {
+            setState(() {
               _showDialog();
-            });*/
+            });
           },
         ),
       );

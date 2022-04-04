@@ -24,14 +24,10 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentTheme = ref.watch(changeTheme);
-    print(currentTheme);
     return MaterialApp(
-      title: 'Flutter Demo',
+      //title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: Styles.themeData(currentTheme.darkMode, context),
-      //theme: AppTheme.lightTheme,
-      //darkTheme: AppTheme.darkTheme,
-      themeMode: currentTheme.darkMode ? ThemeMode.dark : ThemeMode.light,
       home: const HomePage(),
     );
   }

@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:copy_pasta/Providers/change_tehem_state.dart';
 import 'package:copy_pasta/Providers/clip_board_provider.dart';
 import 'package:copy_pasta/Providers/language_changer.dart';
+import 'package:copy_pasta/services/ad_helper.dart';
 import 'package:copy_pasta/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
 import 'package:passcode_screen/passcode_screen.dart';
@@ -29,6 +31,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   bool isAuthenticated = false;
   String? storedPasscode;
   SharedPreferences? prefs;
+  final int maxFailedLoadAttempts = 3;
+  InterstitialAd? _interstitialAd;
+  int _interstitialLoadAttempts = 0;
 
   @override
   void initState() {
@@ -37,6 +42,48 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.read(clipBoardProvider.notifier).getSavedPasswcode();
     ref.read(changeTheme).getSavedTheme();
     ref.read(changeLangauge).getLan();
+    _createInterstitialAd();
+    _showInterstitialAd();
+  }
+
+  Future<InitializationStatus> _initGoogleMobileAds() {
+    return MobileAds.instance.initialize();
+  }
+
+  void _createInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: AdHelper.interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (InterstitialAd ad) {
+          _interstitialAd = ad;
+          _interstitialLoadAttempts = 0;
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          _interstitialLoadAttempts += 1;
+          _interstitialAd = null;
+          if (_interstitialLoadAttempts <= maxFailedLoadAttempts) {
+            _createInterstitialAd();
+          }
+        },
+      ),
+    );
+  }
+
+  void _showInterstitialAd() {
+    if (_interstitialAd != null) {
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (InterstitialAd ad) {
+          ad.dispose();
+          _createInterstitialAd();
+        },
+        onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+          ad.dispose();
+          _createInterstitialAd();
+        },
+      );
+      _interstitialAd!.show();
+    }
   }
 
   Future<void> _onRfresh() async {

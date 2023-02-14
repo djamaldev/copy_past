@@ -42,6 +42,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.read(clipBoardProvider.notifier).getSavedPasswcode();
     ref.read(changeTheme).getSavedTheme();
     ref.read(changeLangauge).getLan();
+    _initGoogleMobileAds();
     _createInterstitialAd();
     _showInterstitialAd();
   }

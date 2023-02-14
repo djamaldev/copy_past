@@ -36,7 +36,7 @@ class ChangeLanguage with ChangeNotifier {
     'list_password': 'قائمة كلمات السر',
     'language': 'اللغة',
     'dark_mode': 'تفعيل الوضع الداكن',
-    'light_mode': 'تعطيل الوضع الداكن',
+    'light_mode': 'إيقاف الوضع الداكن',
     'add_passw_alert': 'هل تريد إضافة النص إلى كلمات السر ؟',
     'other_passw': 'أضف نص اخر',
     'add_password': 'أضف كلمة السر',

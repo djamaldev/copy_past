@@ -8,7 +8,6 @@ import 'package:copy_pasta/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
 import 'package:passcode_screen/passcode_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +33,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   final int maxFailedLoadAttempts = 3;
   InterstitialAd? _interstitialAd;
   int _interstitialLoadAttempts = 0;
+  AppOpenAd? _appOpenAd;
 
   @override
   void initState() {
@@ -45,6 +45,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     _initGoogleMobileAds();
     _createInterstitialAd();
     _showInterstitialAd();
+    _loadOpenAd();
   }
 
   Future<InitializationStatus> _initGoogleMobileAds() {
@@ -87,12 +88,35 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
+  void _loadOpenAd() {
+    AppOpenAd.load(
+        adUnitId: AdHelper.OpenAppAdAdUnitId,
+        request: const AdRequest(),
+        adLoadCallback: AppOpenAdLoadCallback(onAdLoaded: (ad) {
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              setState(() {
+                ad.dispose();
+                _appOpenAd = null;
+              });
+              _loadOpenAd();
+            },
+          );
+          setState(() {
+            _appOpenAd = ad;
+          });
+        }, onAdFailedToLoad: (err) {
+          print('Failed to load a rewarded ad: ${err.message}');
+        }),
+        orientation: AppOpenAd.orientationPortrait);
+  }
+
   Future<void> _onRfresh() async {
     await ref.read(clipBoardProvider).getAllCopiedText();
   }
 
   _showDialog() async {
-    final _lan = ref.watch(changeLangauge);
+    final lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (context) {
@@ -103,7 +127,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           title: const Center(child: Text('copyPast')),
           content: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: Text('${_lan.getTexts('alert_copied_txt')}'),
+            child: Text('${lan.getTexts('alert_copied_txt')}'),
           ),
           actions: [
             TextButton(
@@ -111,13 +135,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ref.read(clipBoardProvider).setData();
                   Navigator.of(context).pop();
                 },
-                child: Text('${_lan.getTexts('ok')}')),
+                child: Text('${lan.getTexts('ok')}')),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 showDialogWithFields();
               },
-              child: Text('${_lan.getTexts('add_other_txt')}'),
+              child: Text('${lan.getTexts('add_other_txt')}'),
             )
           ],
         );
@@ -126,7 +150,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   void showDialogWithFields() {
-    final _lan = ref.watch(changeLangauge);
+    final lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (_) {
@@ -143,20 +167,20 @@ class _HomePageState extends ConsumerState<HomePage> {
             child: TextField(
               controller: textController,
               decoration:
-                  InputDecoration(hintText: '${_lan.getTexts('enter_txt')}'),
+                  InputDecoration(hintText: '${lan.getTexts('enter_txt')}'),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('${_lan.getTexts('cancel')}'),
+              child: Text('${lan.getTexts('cancel')}'),
             ),
             TextButton(
               onPressed: () {
                 ref.read(clipBoardProvider).addOtherText(textController.text);
                 Navigator.pop(context);
               },
-              child: Text('${_lan.getTexts('add')}'),
+              child: Text('${lan.getTexts('add')}'),
             ),
           ],
         );
@@ -165,18 +189,18 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   _defaultLockScreenButton(BuildContext ctx) {
-    final _lan = ref.watch(changeLangauge);
+    final lan = ref.watch(changeLangauge);
     return MaterialButton(
       color: Theme.of(context).primaryColor,
-      child: Text('${_lan.getTexts('authenticate')}'),
+      child: Text('${lan.getTexts('authenticate')}'),
       onPressed: () {
         _showLockScreen(
           ctx,
           opaque: false,
           cancelButton: Text(
-            '${_lan.getTexts('cancel')}',
+            '${lan.getTexts('cancel')}',
             style: const TextStyle(fontSize: 16, color: Colors.white),
-            semanticsLabel: '${_lan.getTexts('cancel')}',
+            semanticsLabel: '${lan.getTexts('cancel')}',
           ),
         );
       },
@@ -186,12 +210,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   _showLockScreen(
     BuildContext ctx, {
     required bool opaque,
-    CircleUIConfig? circleUIConfig,
     KeyboardUIConfig? keyboardUIConfig,
     required Widget cancelButton,
     List<String>? digits,
   }) {
-    final _lan = ref.watch(changeLangauge);
+    final lan = ref.watch(changeLangauge);
     Future.delayed(Duration.zero, () {
       Navigator.push(
         context,
@@ -201,7 +224,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               PasscodeScreen(
             //key: _formKey,
             title: Text(
-              '${_lan.getTexts('enter_app_passcode')}',
+              '${lan.getTexts('enter_app_passcode')}',
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white, fontSize: 28),
             ),
@@ -210,9 +233,9 @@ class _HomePageState extends ConsumerState<HomePage> {
             passwordEnteredCallback: _onPasscodeEntered,
             cancelButton: cancelButton,
             deleteButton: Text(
-              '${_lan.getTexts('delete')}',
+              '${lan.getTexts('delete')}',
               style: const TextStyle(fontSize: 16, color: Colors.white),
-              semanticsLabel: '${_lan.getTexts('delete')}',
+              semanticsLabel: '${lan.getTexts('delete')}',
             ),
             shouldTriggerVerification: _verificationNotifier.stream,
             backgroundColor: Colors.black.withOpacity(0.8),
@@ -322,7 +345,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }*/
 
   _copiedToClipBoardDialog() async {
-    final _lan = ref.watch(changeLangauge);
+    final lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (_) {
@@ -334,13 +357,13 @@ class _HomePageState extends ConsumerState<HomePage> {
           content: Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-              child: Text('${_lan.getTexts('copied_txt')}')),
+              child: Text('${lan.getTexts('copied_txt')}')),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('${_lan.getTexts('ok')}'),
+              child: Text('${lan.getTexts('ok')}'),
             ),
           ],
         );
@@ -349,7 +372,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildChild(BuildContext ctx) {
-    final _lan = ref.watch(changeLangauge);
+    final lan = ref.watch(changeLangauge);
     var data = ref.watch(clipBoardProvider).taskList;
     final isDarkMode = ref.watch(changeTheme).darkMode;
     final theme = Theme.of(context);
@@ -357,7 +380,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       return Scaffold(
         appBar: AppBar(
           //backgroundColor: theme.backgroundColor,
-          title: Text('${_lan.getTexts('clipBoard_manager')}'),
+          title: Text('${lan.getTexts('clipBoard_manager')}'),
           centerTitle: true,
           actions: [
             IconButton(
@@ -374,7 +397,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       content: Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10.0, vertical: 10.0),
-                          child: Text('${_lan.getTexts('delete_all_txt')}')),
+                          child: Text('${lan.getTexts('delete_all_txt')}')),
                       actions: [
                         TextButton(
                             onPressed: () {
@@ -386,7 +409,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           onPressed: () {
                             Navigator.of(context).pop();
                           },
-                          child: Text('${_lan.getTexts('cancel')}'),
+                          child: Text('${lan.getTexts('cancel')}'),
                         )
                       ],
                     );
@@ -434,7 +457,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10.0, vertical: 10.0),
                                     child:
-                                        Text('${_lan.getTexts('delete_txt')}')),
+                                        Text('${lan.getTexts('delete_txt')}')),
                                 actions: [
                                   TextButton(
                                     onPressed: () {
@@ -444,13 +467,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                                               data[index]['text'].toString());
                                       Navigator.of(context).pop();
                                     },
-                                    child: Text('${_lan.getTexts('ok')}'),
+                                    child: Text('${lan.getTexts('ok')}'),
                                   ),
                                   TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
                                     },
-                                    child: Text('${_lan.getTexts('cancel')}'),
+                                    child: Text('${lan.getTexts('cancel')}'),
                                   ),
                                 ],
                               );

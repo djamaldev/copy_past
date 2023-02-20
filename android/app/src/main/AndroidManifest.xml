@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.yacinez.dz.copy_pasta">
    <application
-        android:label="copy_pasta"
+        android:label="clipboard"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

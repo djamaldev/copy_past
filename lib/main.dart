@@ -4,6 +4,7 @@ import 'package:copy_pasta/services/db_helper.dart';
 import 'package:copy_pasta/services/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Providers/clip_board_provider.dart';
@@ -13,6 +14,7 @@ final clipBoardProvider =
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await MobileAds.instance.initialize();
   final prefs = await SharedPreferences.getInstance();
   prefs.getBool('dark');
   await DBHelper.initDB();

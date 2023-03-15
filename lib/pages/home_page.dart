@@ -34,6 +34,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   InterstitialAd? _interstitialAd;
   int _interstitialLoadAttempts = 0;
   AppOpenAd? _appOpenAd;
+  bool _isloaded = false;
+  bool _adShowing = false;
 
   @override
   void initState() {
@@ -42,14 +44,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.read(clipBoardProvider.notifier).getSavedPasswcode();
     ref.read(changeTheme).getSavedTheme();
     ref.read(changeLangauge).getLan();
-    _initGoogleMobileAds();
+    //_initGoogleMobileAds();
     _createInterstitialAd();
-    _showInterstitialAd();
+    _showAd();
     _loadOpenAd();
-  }
-
-  Future<InitializationStatus> _initGoogleMobileAds() {
-    return MobileAds.instance.initialize();
+    _showOpenAd();
   }
 
   void _createInterstitialAd() {
@@ -58,12 +57,18 @@ class _HomePageState extends ConsumerState<HomePage> {
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (InterstitialAd ad) {
-          _interstitialAd = ad;
-          _interstitialLoadAttempts = 0;
+          setState(() {
+            _interstitialAd = ad;
+            _interstitialLoadAttempts = 0;
+            _interstitialAd!.setImmersiveMode(true);
+            _isloaded = true;
+          });
         },
         onAdFailedToLoad: (LoadAdError error) {
-          _interstitialLoadAttempts += 1;
-          _interstitialAd = null;
+          setState(() {
+            _interstitialLoadAttempts += 1;
+            _interstitialAd = null;
+          });
           if (_interstitialLoadAttempts <= maxFailedLoadAttempts) {
             _createInterstitialAd();
           }
@@ -72,6 +77,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+//ca-app-pub-7897101252102419~7398355740
   void _showInterstitialAd() {
     if (_interstitialAd != null) {
       _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
@@ -88,27 +94,59 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
+  _showAd() {
+    if (_isloaded) {
+      _showInterstitialAd();
+    }
+  }
+
   void _loadOpenAd() {
     AppOpenAd.load(
-        adUnitId: AdHelper.OpenAppAdAdUnitId,
-        request: const AdRequest(),
-        adLoadCallback: AppOpenAdLoadCallback(onAdLoaded: (ad) {
-          ad.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              setState(() {
-                ad.dispose();
-                _appOpenAd = null;
-              });
-              _loadOpenAd();
-            },
-          );
+      adUnitId: AdHelper.OpenAppAdAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) {
           setState(() {
             _appOpenAd = ad;
+            //_appOpenAd?.show();
+            _adShowing = true;
           });
-        }, onAdFailedToLoad: (err) {
-          print('Failed to load a rewarded ad: ${err.message}');
-        }),
-        orientation: AppOpenAd.orientationPortrait);
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          print('AppOpenAd failed to load: $error');
+        },
+      ),
+      orientation: AppOpenAd.orientationPortrait,
+    );
+  }
+
+  _showAdIfAvailable() {
+    if (_appOpenAd != null) {
+      _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (ad) {
+          print('$ad onAdShowedFullScreenContent');
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          print('$ad onAdFailedToShowFullScreenContent: $error');
+
+          ad.dispose();
+          _loadOpenAd();
+        },
+        onAdDismissedFullScreenContent: (ad) {
+          print('$ad onAdDismissedFullScreenContent');
+
+          ad.dispose();
+          _loadOpenAd();
+        },
+      );
+      _appOpenAd!.show();
+    }
+  }
+
+  _showOpenAd() {
+    if (_adShowing) {
+      _showAdIfAvailable();
+    }
   }
 
   Future<void> _onRfresh() async {

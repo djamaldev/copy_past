@@ -36,6 +36,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   AppOpenAd? _appOpenAd;
   bool _isloaded = false;
   bool _adShowing = false;
+  bool _bannerAdReady = false;
+  BannerAd? _bannerAd;
 
   @override
   void initState() {
@@ -49,6 +51,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     _showAd();
     _loadOpenAd();
     _showOpenAd();
+    _loadBannerId();
   }
 
   void _createInterstitialAd() {
@@ -147,6 +150,26 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (_adShowing) {
       _showAdIfAvailable();
     }
+  }
+
+  Future<void> _loadBannerId() async {
+    BannerAd(
+      adUnitId: AdHelper.banerAdUnitId,
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _bannerAd = ad as BannerAd;
+            _bannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          ad.dispose();
+        },
+      ),
+    ).load();
   }
 
   Future<void> _onRfresh() async {
@@ -306,6 +329,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void dispose() {
     _verificationNotifier.close();
+    _interstitialAd?.dispose();
+    _appOpenAd?.dispose();
+    _bannerAd?.dispose();
     super.dispose();
   }
 
@@ -460,73 +486,92 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         drawer: const SafeArea(child: AppDrawer()),
         body: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: _onRfresh,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    ListTile(
-                      leading: IconButton(
-                        icon: const Icon(Icons.copy),
-                        onPressed: () {
-                          ref
-                              .read(clipBoardProvider)
-                              .copyText(data[index]['text']);
-                          _copiedToClipBoardDialog();
-                        },
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) {
-                              return AlertDialog(
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                        Radius.circular(10.0))),
-                                contentPadding:
-                                    const EdgeInsets.only(top: 10.0),
-                                title: const Center(child: Text('copyPast')),
-                                content: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10.0, vertical: 10.0),
-                                    child:
-                                        Text('${lan.getTexts('delete_txt')}')),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      ref
-                                          .read(clipBoardProvider)
-                                          .deleteTextAtIndex(
-                                              data[index]['text'].toString());
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('${lan.getTexts('ok')}'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text('${lan.getTexts('cancel')}'),
-                                  ),
-                                ],
-                              );
+          child: Column(
+            //mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              RefreshIndicator(
+                onRefresh: _onRfresh,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    return Column(
+                      children: [
+                        ListTile(
+                          leading: IconButton(
+                            icon: const Icon(Icons.copy),
+                            onPressed: () {
+                              ref
+                                  .read(clipBoardProvider)
+                                  .copyText(data[index]['text']);
+                              _copiedToClipBoardDialog();
                             },
-                          );
-                          //print(index);
-                        },
-                      ),
-                      title: Text(data[index]['text'].toString()),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return AlertDialog(
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(10.0))),
+                                    contentPadding:
+                                        const EdgeInsets.only(top: 10.0),
+                                    title:
+                                        const Center(child: Text('copyPast')),
+                                    content: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10.0, vertical: 10.0),
+                                        child: Text(
+                                            '${lan.getTexts('delete_txt')}')),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          ref
+                                              .read(clipBoardProvider)
+                                              .deleteTextAtIndex(data[index]
+                                                      ['text']
+                                                  .toString());
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text('${lan.getTexts('ok')}'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child:
+                                            Text('${lan.getTexts('cancel')}'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                              //print(index);
+                            },
+                          ),
+                          title: Text(data[index]['text'].toString()),
+                        ),
+                        const Divider(height: 1.0)
+                      ],
+                    );
+                  },
+                ),
+              ),
+              if (_bannerAd != null && _bannerAdReady)
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: SizedBox(
+                      width: _bannerAd!.size.width.toDouble(),
+                      height: _bannerAd!.size.height.toDouble(),
+                      child: AdWidget(ad: _bannerAd!),
                     ),
-                    const Divider(height: 1.0)
-                  ],
-                );
-              },
-            ),
+                  ),
+                ),
+            ],
           ),
         ),
         floatingActionButton: FloatingActionButton(

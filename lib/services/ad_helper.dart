@@ -1,9 +1,22 @@
 import 'dart:io';
 
+//ca-app-pub-3940256099942544/1033173712
 class AdHelper {
+  static String get banerAdUnitId {
+    if (Platform.isAndroid) {
+      return 'ca-app-pub-7897101252102419/9657794714';
+      //return 'ca-app-pub-3940256099942544/6300978111';
+    } else if (Platform.isIOS) {
+      return '';
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
+  }
+
   static String get interstitialAdUnitId {
     if (Platform.isAndroid) {
       return 'ca-app-pub-7897101252102419/8864622641';
+      //return 'ca-app-pub-3940256099942544/1033173712';
     } else if (Platform.isIOS) {
       return '';
     } else {

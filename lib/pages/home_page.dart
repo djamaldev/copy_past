@@ -48,9 +48,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.read(changeLangauge).getLan();
     //_initGoogleMobileAds();
     _createInterstitialAd();
-    _showAd();
+    //_showAd();
     _loadOpenAd();
-    _showOpenAd();
+    //_showOpenAd();
     _loadBannerId();
   }
 
@@ -97,12 +97,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
-  _showAd() {
-    if (_isloaded) {
-      _showInterstitialAd();
-    }
-  }
-
   void _loadOpenAd() {
     AppOpenAd.load(
       adUnitId: AdHelper.OpenAppAdAdUnitId,
@@ -143,12 +137,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         },
       );
       _appOpenAd!.show();
-    }
-  }
-
-  _showOpenAd() {
-    if (_adShowing) {
-      _showAdIfAvailable();
     }
   }
 
@@ -593,6 +581,12 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isloaded) {
+      _showInterstitialAd();
+    }
+    if (_adShowing) {
+      _showAdIfAvailable();
+    }
     return _buildChild(context);
   }
 }

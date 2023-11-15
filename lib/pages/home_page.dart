@@ -5,6 +5,7 @@ import 'package:copy_pasta/Providers/clip_board_provider.dart';
 import 'package:copy_pasta/Providers/language_changer.dart';
 import 'package:copy_pasta/services/ad_helper.dart';
 import 'package:copy_pasta/widgets/app_drawer.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -34,8 +35,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   InterstitialAd? _interstitialAd;
   int _interstitialLoadAttempts = 0;
   AppOpenAd? _appOpenAd;
-  bool _isloaded = false;
-  bool _adShowing = false;
+  final bool _isloaded = false;
+  final bool _adShowing = false;
   bool _bannerAdReady = false;
   BannerAd? _bannerAd;
 
@@ -46,11 +47,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     ref.read(clipBoardProvider.notifier).getSavedPasswcode();
     ref.read(changeTheme).getSavedTheme();
     ref.read(changeLangauge).getLan();
-    //_initGoogleMobileAds();
-    _createInterstitialAd();
-    //_showAd();
-    _loadOpenAd();
-    //_showOpenAd();
+    showOpenAd();
+    //showInterstitialAd();
     _loadBannerId();
   }
 
@@ -64,7 +62,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             _interstitialAd = ad;
             _interstitialLoadAttempts = 0;
             _interstitialAd!.setImmersiveMode(true);
-            _isloaded = true;
+            _interstitialAd?.show();
           });
         },
         onAdFailedToLoad: (LoadAdError error) {
@@ -80,23 +78,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-//ca-app-pub-7897101252102419~7398355740
-  void _showInterstitialAd() {
-    if (_interstitialAd != null) {
-      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-        onAdDismissedFullScreenContent: (InterstitialAd ad) {
-          ad.dispose();
-          _createInterstitialAd();
-        },
-        onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
-          ad.dispose();
-          _createInterstitialAd();
-        },
-      );
-      _interstitialAd!.show();
-    }
-  }
-
   void _loadOpenAd() {
     AppOpenAd.load(
       adUnitId: AdHelper.OpenAppAdAdUnitId,
@@ -105,39 +86,17 @@ class _HomePageState extends ConsumerState<HomePage> {
         onAdLoaded: (ad) {
           setState(() {
             _appOpenAd = ad;
-            //_appOpenAd?.show();
-            _adShowing = true;
+            _appOpenAd?.show();
           });
         },
         onAdFailedToLoad: (LoadAdError error) {
-          print('AppOpenAd failed to load: $error');
+          if (kDebugMode) {
+            print('AppOpenAd failed to load: $error');
+          }
         },
       ),
       orientation: AppOpenAd.orientationPortrait,
     );
-  }
-
-  _showAdIfAvailable() {
-    if (_appOpenAd != null) {
-      _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
-        onAdShowedFullScreenContent: (ad) {
-          print('$ad onAdShowedFullScreenContent');
-        },
-        onAdFailedToShowFullScreenContent: (ad, error) {
-          print('$ad onAdFailedToShowFullScreenContent: $error');
-
-          ad.dispose();
-          _loadOpenAd();
-        },
-        onAdDismissedFullScreenContent: (ad) {
-          print('$ad onAdDismissedFullScreenContent');
-
-          ad.dispose();
-          _loadOpenAd();
-        },
-      );
-      _appOpenAd!.show();
-    }
   }
 
   Future<void> _loadBannerId() async {
@@ -153,11 +112,25 @@ class _HomePageState extends ConsumerState<HomePage> {
           });
         },
         onAdFailedToLoad: (ad, err) {
-          print('Failed to load a banner ad: ${err.message}');
+          if (kDebugMode) {
+            print('Failed to load a banner ad: ${err.message}');
+          }
           ad.dispose();
         },
       ),
     ).load();
+  }
+
+  Future showOpenAd() async {
+    Future.delayed(const Duration(seconds: 5), () {
+      _loadOpenAd();
+    });
+  }
+
+  Future showInterstitialAd() async {
+    Future.delayed(const Duration(seconds: 10), () {
+      _createInterstitialAd();
+    });
   }
 
   Future<void> _onRfresh() async {
@@ -435,40 +408,55 @@ class _HomePageState extends ConsumerState<HomePage> {
           title: Text('${lan.getTexts('clipBoard_manager')}'),
           centerTitle: true,
           actions: [
-            IconButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(10.0))),
-                      contentPadding: const EdgeInsets.only(top: 10.0),
-                      title: const Center(child: Text('copyPast')),
-                      content: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 10.0),
-                          child: Text('${lan.getTexts('delete_all_txt')}')),
-                      actions: [
-                        TextButton(
-                            onPressed: () {
-                              ref.read(clipBoardProvider).deleteAllCopiedText();
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Ok')),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('${lan.getTexts('cancel')}'),
-                        )
-                      ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10.0))),
+                          contentPadding: const EdgeInsets.only(top: 10.0),
+                          title: const Center(child: Text('copyPast')),
+                          content: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 10.0),
+                              child: Text('${lan.getTexts('delete_all_txt')}')),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  ref
+                                      .read(clipBoardProvider)
+                                      .deleteAllCopiedText();
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Ok')),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('${lan.getTexts('cancel')}'),
+                            )
+                          ],
+                        );
+                      },
                     );
                   },
-                );
-              },
-              icon: const Icon(Icons.delete_outline_rounded),
+                  icon: const Icon(Icons.delete_outline_rounded),
+                ),
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _showDialog();
+                    });
+                  },
+                  icon: const Icon(Icons.add),
+                ),
+              ],
             )
           ],
         ),
@@ -562,7 +550,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
+        /*floatingActionButton: FloatingActionButton(
           backgroundColor: isDarkMode ? Colors.white : Colors.red,
           child: const Icon(Icons.add),
           onPressed: () {
@@ -570,7 +558,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               _showDialog();
             });
           },
-        ),
+        ),*/
       );
     } else {
       return Center(
@@ -581,12 +569,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isloaded) {
-      _showInterstitialAd();
-    }
-    if (_adShowing) {
-      _showAdIfAvailable();
-    }
     return _buildChild(context);
   }
 }

@@ -6,17 +6,20 @@
     "configurations": [
         {
             "name": "copy_pasta",
+            "program": "lib/main.dart",
             "request": "launch",
             "type": "dart"
         },
         {
             "name": "copy_pasta (profile mode)",
+            "program": "lib/main.dart",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
             "name": "copy_pasta (release mode)",
+            "program": "lib/main.dart",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

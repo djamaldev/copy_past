@@ -36,7 +36,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   }
 
   _showSavedValue() async {
-    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    //SharedPreferences _prefs = await SharedPreferences.getInstance();
     var value = '';
     //text = '${_lan.getTexts('add_password')}';
     Future.delayed(Duration.zero, () {
@@ -55,7 +55,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   }
 
   void _showPasscodeDialog() {
-    final _lan = ref.watch(changeLangauge);
+    final lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (_) {
@@ -66,7 +66,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
           contentPadding: const EdgeInsets.only(top: 10.0),
           title: Center(
             child: Text(
-              '${_lan.getTexts('save_passw_alert')}',
+              '${lan.getTexts('save_passw_alert')}',
               style: const TextStyle(color: Colors.red),
             ),
           ),
@@ -85,10 +85,10 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       keyboardType: TextInputType.number,
                       obscureText: true,
                       decoration: InputDecoration(
-                          hintText: '${_lan.getTexts('enter_digit_numb')}'),
+                          hintText: '${lan.getTexts('enter_digit_numb')}'),
                       validator: (val) {
                         if (val!.length != 6 || val.isEmpty) {
-                          return '${_lan.getTexts('gigit_numb_alert')}';
+                          return '${lan.getTexts('gigit_numb_alert')}';
                         }
                         return null;
                       },
@@ -98,10 +98,10 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       keyboardType: TextInputType.number,
                       obscureText: true,
                       decoration: InputDecoration(
-                          hintText: '${_lan.getTexts('confirm_passcode')}'),
+                          hintText: '${lan.getTexts('confirm_passcode')}'),
                       validator: (val) {
                         if (val != passcodeController.text || val!.isEmpty) {
-                          return '${_lan.getTexts('confirm_passcode_alert')}';
+                          return '${lan.getTexts('confirm_passcode_alert')}';
                         }
                         return null;
                       },
@@ -119,7 +119,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                 });
                 Navigator.pop(context);
               },
-              child: Text('${_lan.getTexts('cancel')}'),
+              child: Text('${lan.getTexts('cancel')}'),
             ),
             TextButton(
               onPressed: () async {
@@ -141,7 +141,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
                 Navigator.pop(context);
               },
-              child: Text('${_lan.getTexts('set')}'),
+              child: Text('${lan.getTexts('set')}'),
             ),
           ],
         );
@@ -150,7 +150,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   }
 
   _showRemoveDialog() async {
-    final _lan = ref.watch(changeLangauge);
+    final lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (ctx) {
@@ -162,20 +162,20 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
           content: Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-              child: Text('${_lan.getTexts('remove_passcode_alert')}')),
+              child: Text('${lan.getTexts('remove_passcode_alert')}')),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _showEnterPasscodeDialogue();
               },
-              child: Text('${_lan.getTexts('ok')}'),
+              child: Text('${lan.getTexts('ok')}'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('${_lan.getTexts('cancel')}'),
+              child: Text('${lan.getTexts('cancel')}'),
             )
           ],
         );
@@ -184,7 +184,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   }
 
   _showEnterPasscodeDialogue() {
-    final _lan = ref.watch(changeLangauge);
+    final lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (_) {
@@ -205,11 +205,11 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   keyboardType: TextInputType.number,
                   obscureText: true,
                   decoration: InputDecoration(
-                      hintText: '${_lan.getTexts('enter_correct_passcode')}'),
+                      hintText: '${lan.getTexts('enter_correct_passcode')}'),
                   validator: (val) {
                     if (val!.toString() != ref.watch(clipBoardProvider).passw ||
                         val.isEmpty) {
-                      return '${_lan.getTexts('incorrect_passcode')}';
+                      return '${lan.getTexts('incorrect_passcode')}';
                     }
                     return null;
                   },
@@ -228,13 +228,13 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                 ref.read(clipBoardProvider).removePasscode();
                 Navigator.of(context).pop();
               },
-              child: Text('${_lan.getTexts('ok')}'),
+              child: Text('${lan.getTexts('ok')}'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('${_lan.getTexts('cancel')}'),
+              child: Text('${lan.getTexts('cancel')}'),
             )
           ],
         );
@@ -243,7 +243,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   }
 
   _alertShowListPasswordDialogue() {
-    final _lan = ref.watch(changeLangauge);
+    final lan = ref.watch(changeLangauge);
     showDialog(
       context: context,
       builder: (_) {
@@ -264,11 +264,11 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   keyboardType: TextInputType.number,
                   obscureText: true,
                   decoration: InputDecoration(
-                      hintText: '${_lan.getTexts('enter_correct_passcode')}'),
+                      hintText: '${lan.getTexts('enter_correct_passcode')}'),
                   validator: (val) {
                     if (val!.toString() != ref.watch(clipBoardProvider).passw ||
                         val.isEmpty) {
-                      return '${_lan.getTexts('incorrect_passcode')}';
+                      return '${lan.getTexts('incorrect_passcode')}';
                     }
                     return null;
                   },
@@ -293,13 +293,13 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                 });
                 Navigator.of(context).pop();
               },
-              child: Text('${_lan.getTexts('ok')}'),
+              child: Text('${lan.getTexts('ok')}'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('${_lan.getTexts('cancel')}'),
+              child: Text('${lan.getTexts('cancel')}'),
             )
           ],
         );
@@ -309,8 +309,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    final _lan = ref.watch(changeLangauge);
-    var _passcode = ref.watch(clipBoardProvider).passw;
+    final lan = ref.watch(changeLangauge);
+    var passcode = ref.watch(clipBoardProvider).passw;
     var isDarkMode = ref.watch(changeTheme).darkMode;
     return Theme(
       data: Theme.of(context).copyWith(
@@ -327,7 +327,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
             ),
             ListTile(
               leading: const Icon(Icons.home),
-              title: Text('${_lan.getTexts('home')}'),
+              title: Text('${lan.getTexts('home')}'),
               onTap: () {
                 Navigator.of(context).pop();
               },
@@ -337,9 +337,9 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
             ),
             ListTile(
               leading: const Icon(Icons.list),
-              title: Text('${_lan.getTexts('list_password')}'),
+              title: Text('${lan.getTexts('list_password')}'),
               onTap: () {
-                if (_passcode.isNotEmpty) {
+                if (passcode.isNotEmpty) {
                   showDialog(
                     context: context,
                     builder: (_) {
@@ -352,20 +352,20 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                         content: Padding(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10.0, vertical: 10.0),
-                            child: Text('${_lan.getTexts('security_txt')}')),
+                            child: Text('${lan.getTexts('security_txt')}')),
                         actions: [
                           TextButton(
                             onPressed: () {
                               Navigator.of(context).pop();
                               _alertShowListPasswordDialogue();
                             },
-                            child: Text('${_lan.getTexts('ok')}'),
+                            child: Text('${lan.getTexts('ok')}'),
                           ),
                           TextButton(
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
-                            child: Text('${_lan.getTexts('cancel')}'),
+                            child: Text('${lan.getTexts('cancel')}'),
                           ),
                         ],
                       );
@@ -401,30 +401,30 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                 },
               ),
               title: Text(isActve
-                  ? '${_lan.getTexts('remove_passcode')}'
-                  : '${_lan.getTexts('add_passcode')}'),
+                  ? '${lan.getTexts('remove_passcode')}'
+                  : '${lan.getTexts('add_passcode')}'),
             ),
             Divider(
               color: isDarkMode ? Colors.white : Colors.grey,
             ),
             ListTile(
               leading: const Icon(Icons.language_outlined),
-              title: Text('${_lan.getTexts('language')}'),
+              title: Text('${lan.getTexts('language')}'),
               trailing: Visibility(
                 visible: isVisible,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${_lan.getTexts('arabic')}',
+                      '${lan.getTexts('arabic')}',
                       style: const TextStyle(fontSize: 12),
                     ),
                     Switch(
-                      value: _lan.isEn,
-                      onChanged: (value) => _lan.changeLan(value),
+                      value: lan.isEn,
+                      onChanged: (value) => lan.changeLan(value),
                     ),
                     Text(
-                      '${_lan.getTexts('english')}',
+                      '${lan.getTexts('english')}',
                       style: const TextStyle(fontSize: 12),
                     )
                   ],
@@ -442,8 +442,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
             ListTile(
               leading: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
               title: Text(isDarkMode
-                  ? '${_lan.getTexts('light_mode')}'
-                  : '${_lan.getTexts('dark_mode')}'),
+                  ? '${lan.getTexts('light_mode')}'
+                  : '${lan.getTexts('dark_mode')}'),
               trailing: Switch(
                 value: isDarkMode,
                 onChanged: (val) => ref.read(changeTheme).changeTheme(val),

@@ -34,6 +34,9 @@ class ClipBoardProvider extends ChangeNotifier {
     Clipboard.setData(ClipboardData(text: text)).then(
       (_) async {
         _isFound = await DBHelper.texExists(text);
+        if (text == '') {
+          return;
+        }
         if (_isFound == false) {
           await DBHelper.insert(ClipBoardManager(text: text));
           getAllCopiedText();
@@ -51,14 +54,18 @@ class ClipBoardProvider extends ChangeNotifier {
   }
 
   setData() {
+    //ClipboardData val;
     Clipboard.getData(Clipboard.kTextPlain).then(
       (value) async {
         _isFound = await DBHelper.texExists(value!.text!);
+        if (value.text == '') {
+          return;
+        }
         if (_isFound == false) {
           await DBHelper.insert(ClipBoardManager(text: value.text));
           getAllCopiedText();
         } else {
-          Null;
+          null;
         }
       },
     );

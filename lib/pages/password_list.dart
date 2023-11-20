@@ -1,6 +1,7 @@
 import 'package:copy_pasta/Providers/change_tehem_state.dart';
 import 'package:copy_pasta/Providers/language_changer.dart';
 import 'package:copy_pasta/services/ad_helper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -18,14 +19,15 @@ class _PasswordListState extends ConsumerState<PasswordList> {
   final clipBoardProvider = ChangeNotifierProvider<ClipBoardProvider>(
     (ref) => ClipBoardProvider(),
   );
-
+  AppOpenAd? _appOpenAd;
   final int maxFailedLoadAttempts = 3;
   InterstitialAd? _interstitialAd;
   int _interstitialLoadAttempts = 0;
   @override
   void initState() {
     super.initState();
-    showInterstitialAd();
+    //showInterstitialAd();
+    showOpenAd();
     ref.read(clipBoardProvider.notifier).getAllCopiedPassword();
     ref.read(changeLangauge).getLan();
   }
@@ -57,8 +59,35 @@ class _PasswordListState extends ConsumerState<PasswordList> {
   }
 
   Future showInterstitialAd() async {
-    Future.delayed(const Duration(seconds: 10), () {
+    Future.delayed(Duration.zero, () {
       _createInterstitialAd();
+    });
+  }
+
+  void _loadOpenAd() {
+    AppOpenAd.load(
+      adUnitId: AdHelper.OpenAppAdAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            _appOpenAd = ad;
+            _appOpenAd?.show();
+          });
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          if (kDebugMode) {
+            print('AppOpenAd failed to load: $error');
+          }
+        },
+      ),
+      orientation: AppOpenAd.orientationPortrait,
+    );
+  }
+
+  Future showOpenAd() async {
+    Future.delayed(Duration.zero, () {
+      _loadOpenAd();
     });
   }
 
